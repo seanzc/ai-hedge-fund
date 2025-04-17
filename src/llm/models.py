@@ -12,6 +12,7 @@ from typing import Tuple, List, Dict, Any, Optional
 
 class ModelProvider(str, Enum):
     """Enum for supported LLM providers"""
+    ALIYUN = "Aliyun"
     ANTHROPIC = "Anthropic"
     DEEPSEEK = "DeepSeek"
     GEMINI = "Gemini"
@@ -55,6 +56,11 @@ class LLMModel(BaseModel):
 
 # Define available models
 AVAILABLE_MODELS = [
+    LLMModel(
+        display_name="[aliyun] deepseek-r1",
+        model_name="deepseek-r1",
+        provider=ModelProvider.ALIYUN
+    ),
     LLMModel(
         display_name="[anthropic] claude-3.5-haiku",
         model_name="claude-3-5-haiku-latest",
@@ -193,6 +199,12 @@ def get_model(model_name: str, model_provider: ModelProvider) -> ChatOpenAI | Ch
             print(f"API Key Error: Please make sure OPENAI_API_KEY is set in your .env file.")
             raise ValueError("OpenAI API key not found.  Please make sure OPENAI_API_KEY is set in your .env file.")
         return ChatOpenAI(model=model_name, api_key=api_key)
+    elif model_provider == ModelProvider.ALIYUN:
+        api_key, api_base = os.getenv("ALIYUN_API_KEY"), os.getenv("ALIYUN_API_BASE") or "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        if not api_key:
+            print(f"API Key Error: Please make sure ALIYUN_API_KEY is set in your .env file.")
+            raise ValueError("Aliyun API key not found.  Please make sure ALIYUN_API_KEY is set in your .env file.")
+        return ChatOpenAI(model=model_name, api_key=api_key, base_url=api_base)
     elif model_provider == ModelProvider.ANTHROPIC:
         api_key = os.getenv("ANTHROPIC_API_KEY")
         if not api_key:
